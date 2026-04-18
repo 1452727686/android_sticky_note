@@ -5,6 +5,11 @@
 
 package com.passheep.sticky_note.feature.app
 
+import android.app.AlarmManager
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -215,11 +220,6 @@ fun StickyNoteAppShell(
                         text = "智能便利贴",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        text = "Pure Cloud Sync",
-                        modifier = Modifier.padding(top = 4.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
                 DrawerItem(
@@ -1459,6 +1459,9 @@ private fun SettingsPage(
     var apiKeyHadFocus by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
+    val alarmManager = remember(context) { context.getSystemService(AlarmManager::class.java) }
+    val exactAlarmSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val exactAlarmGranted = !exactAlarmSupported || alarmManager?.canScheduleExactAlarms() == true
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -1546,6 +1549,42 @@ private fun SettingsPage(
                         color = panelTextSecondaryColor(),
                         style = MaterialTheme.typography.bodySmall,
                     )
+                    if (exactAlarmSupported) {
+                        Text(
+                            text = "精确闹钟权限：${if (exactAlarmGranted) "已开启" else "未开启"}",
+                            modifier = Modifier.padding(top = 10.dp),
+                            color = panelTextSecondaryColor(),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        if (!exactAlarmGranted) {
+                            Text(
+                                text = "未开启时系统可能将 60s 同步延后到约 70~120s（由系统调度策略决定）。",
+                                modifier = Modifier.padding(top = 4.dp),
+                                color = panelTextSecondaryColor(),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                            OutlinedButton(
+                                onClick = {
+                                    val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                        data = Uri.parse("package:${context.packageName}")
+                                    }
+                                    runCatching { context.startActivity(intent) }
+                                        .onFailure {
+                                            Toast.makeText(
+                                                context,
+                                                "当前系统暂不支持直接跳转，请手动到系统设置中开启精确闹钟权限",
+                                                Toast.LENGTH_LONG,
+                                            ).show()
+                                        }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 10.dp),
+                            ) {
+                                Text("开启精确闹钟权限")
+                            }
+                        }
+                    }
                     Button(
                         onClick = {
                             focusManager.clearFocus(force = true)
@@ -1619,7 +1658,7 @@ private fun SettingsPage(
                     Column(modifier = Modifier.weight(1f)) {
                         Text("小组件彩色文字", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                         Text(
-                            "关闭后待办文字跟随主题主色，仅通过圆点和删除线区分状态。",
+                            "关闭后文字跟随小组件主题使用黑白色。",
                             modifier = Modifier.padding(top = 4.dp),
                             color = PanelTextSecondary,
                             style = MaterialTheme.typography.bodySmall,

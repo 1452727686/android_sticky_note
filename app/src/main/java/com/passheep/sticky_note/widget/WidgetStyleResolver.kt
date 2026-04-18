@@ -66,8 +66,31 @@ internal object WidgetStyleResolver {
 
     fun todoTextColor(style: WidgetUiStyle, completed: Boolean): Int {
         if (!style.colorfulTextEnabled) {
-            return style.primaryTextColor
+            if (!completed) {
+                return style.primaryTextColor
+            }
+            val ratio = if (style.isDark) 0.58f else 0.42f
+            return blendArgb(style.primaryTextColor, style.secondaryTextColor, ratio)
         }
         return if (completed) style.completedColor else style.pendingColor
+    }
+
+    private fun blendArgb(colorA: Int, colorB: Int, ratioB: Float): Int {
+        val t = ratioB.coerceIn(0f, 1f)
+        val aA = (colorA ushr 24) and 0xFF
+        val rA = (colorA ushr 16) and 0xFF
+        val gA = (colorA ushr 8) and 0xFF
+        val bA = colorA and 0xFF
+
+        val aB = (colorB ushr 24) and 0xFF
+        val rB = (colorB ushr 16) and 0xFF
+        val gB = (colorB ushr 8) and 0xFF
+        val bB = colorB and 0xFF
+
+        val a = (aA + ((aB - aA) * t)).roundToInt().coerceIn(0, 255)
+        val r = (rA + ((rB - rA) * t)).roundToInt().coerceIn(0, 255)
+        val g = (gA + ((gB - gA) * t)).roundToInt().coerceIn(0, 255)
+        val b = (bA + ((bB - bA) * t)).roundToInt().coerceIn(0, 255)
+        return (a shl 24) or (r shl 16) or (g shl 8) or b
     }
 }

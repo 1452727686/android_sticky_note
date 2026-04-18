@@ -23,20 +23,19 @@ class SyncAlarmScheduler @Inject constructor(
         val triggerAtMillis = System.currentTimeMillis() + safeInterval * 1000L
         val pendingIntent = alarmPendingIntent()
         alarmManager?.cancel(pendingIntent)
-        val canScheduleExact = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            alarmManager?.canScheduleExactAlarms() == true
-        } else {
-            true
-        }
+        val canScheduleExact = canScheduleExactAlarms()
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && canScheduleExact) {
                 alarmManager?.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+                Log.e(TAG, "schedule exact interval=${safeInterval}s triggerAt=$triggerAtMillis")
             } else {
                 scheduleInexact(triggerAtMillis, pendingIntent)
+                Log.e(TAG, "schedule inexact interval=${safeInterval}s triggerAt=$triggerAtMillis")
             }
         } catch (security: SecurityException) {
             Log.e(TAG, "setExact denied, fallback to inexact alarm", security)
             scheduleInexact(triggerAtMillis, pendingIntent)
+            Log.e(TAG, "schedule fallback inexact interval=${safeInterval}s triggerAt=$triggerAtMillis")
         }
     }
 
@@ -62,6 +61,13 @@ class SyncAlarmScheduler @Inject constructor(
         } else {
             alarmManager?.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
         }
+    }
+
+    private fun canScheduleExactAlarms(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return true
+        }
+        return alarmManager?.canScheduleExactAlarms() == true
     }
 
     private companion object {
