@@ -29,7 +29,7 @@ enum class TodoFilter {
 data class QuickTodoDraft(
     val title: String = "",
     val description: String = "",
-    val dueDate: LocalDate? = LocalDate.now(AppBeijingZoneId),
+    val dueDate: LocalDate? = null,
     val dueTimeText: String = "",
     val priority: Int = 0,
     val repeatType: RepeatType? = RepeatType.NONE,
