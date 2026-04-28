@@ -31,6 +31,7 @@ android_sticky_note是一个面向 Android 的待办管理工具，配合 Zectri
 3. 填写平台地址，例如 `https://cloud.zectrix.com`。
 4. 添加 API Key。
 5. 点击测试平台连接，并选择需要关联的设备。
+6. 若出现同步不及时的情况，请开启“精确闹钟权限”、关闭电池优化、允许后台运行。
 
 ## 已完成功能
 
@@ -95,38 +96,6 @@ app/src/main/java/com/passheep/sticky_note
 - JDK 17
 - Android SDK 35
 - Gradle 8.6 或项目 Gradle Wrapper
-
-Debug 构建：
-
-```bash
-./gradlew :app:assembleDebug
-```
-
-Release 构建：
-
-```bash
-./gradlew :app:assembleRelease
-```
-
-生成的 APK 一般位于：
-
-```text
-app/build/outputs/apk/
-```
-
-如果使用 Android Studio 的签名向导，生成的 APK 也可能位于：
-
-```text
-app/release/
-```
-
-## 发布建议
-
-- 不要把 APK、AAB、keystore、签名密码、`local.properties`、API Key 提交到仓库。
-- 推荐在 GitHub Releases 上传 APK 安装包。
-- Tag 示例：`v0.0.17`。
-- Release 标题示例：`android_sticky_note v0.0.17`。
-- Release Notes 建议写明新增功能、修复内容、已知问题。
 
 ## 开源说明
 
