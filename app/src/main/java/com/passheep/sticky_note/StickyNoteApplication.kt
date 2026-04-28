@@ -1,13 +1,12 @@
 package com.passheep.sticky_note
 
 import android.app.Application
-import androidx.work.Configuration
 import com.passheep.sticky_note.data.sync.SyncStartup
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class StickyNoteApplication : Application(), Configuration.Provider {
+class StickyNoteApplication : Application() {
 
     @Inject
     lateinit var syncStartup: SyncStartup
@@ -16,7 +15,4 @@ class StickyNoteApplication : Application(), Configuration.Provider {
         super.onCreate()
         syncStartup.start()
     }
-
-    override val workManagerConfiguration: Configuration
-        get() = Configuration.Builder().build()
 }

@@ -1900,6 +1900,14 @@ private fun AboutPage() {
                     Text("极趣云平台")
                 }
                 OutlinedButton(
+                    onClick = { uriHandler.openUri("https://github.com/passheep/android_sticky_note") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                ) {
+                    Text("项目 GitHub")
+                }
+                OutlinedButton(
                     onClick = { uriHandler.openUri("https://wiki.zectrix.com") },
                     modifier = Modifier
                         .fillMaxWidth()

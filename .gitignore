@@ -1,9 +1,14 @@
 *.iml
+*.apk
+*.aab
+*.jks
+*.keystore
 .gradle
+.gradle-user-home
 /local.properties
 /.idea
 /.kotlin
 /build
 /captures
 **/build
-
+/app/release
