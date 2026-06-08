@@ -236,6 +236,18 @@ fun StickyNoteAppShell(
                     },
                 )
                 DrawerItem(
+                    selected = currentRoute == AppRoute.DEVICE_SWITCH.route,
+                    label = "切换设备",
+                    icon = Icons.Rounded.Devices,
+                    showDot = false,
+                    onClick = {
+                        scope.launch {
+                            drawerState.close()
+                            navController.navigateSingleTop(AppRoute.DEVICE_SWITCH.route)
+                        }
+                    },
+                )
+                DrawerItem(
                     selected = currentRoute == AppRoute.SETTINGS.route,
                     label = "设置中心",
                     icon = Icons.Rounded.Settings,
@@ -256,18 +268,6 @@ fun StickyNoteAppShell(
                         scope.launch {
                             drawerState.close()
                             navController.navigateSingleTop(AppRoute.ABOUT.route)
-                        }
-                    },
-                )
-                DrawerItem(
-                    selected = currentRoute == AppRoute.DEVICE_SWITCH.route,
-                    label = "切换设备",
-                    icon = Icons.Rounded.Devices,
-                    showDot = false,
-                    onClick = {
-                        scope.launch {
-                            drawerState.close()
-                            navController.navigateSingleTop(AppRoute.DEVICE_SWITCH.route)
                         }
                     },
                 )
@@ -1456,6 +1456,13 @@ private fun SettingsPage(
     onSetQuickTodoDefaultTodayEnabled: (Boolean) -> Unit,
     onTestPlatformConnection: (String, String) -> Unit,
 ) {
+    // 真实数据
+    val savedPlatformUri = uiState.platformUrl
+    val savedApiKey = uiState.apiKey
+    // 临时数据
+    var defaultPlatformUri by remember(savedPlatformUri) { mutableStateOf(savedPlatformUri) }
+    var defaultApiKey by remember(savedApiKey) { mutableStateOf(savedApiKey) }
+
     var platformUrlText by rememberSaveable(uiState.platformUrl) { mutableStateOf(uiState.platformUrl) }
     var apiKeyText by rememberSaveable(uiState.apiKey) { mutableStateOf(uiState.apiKey) }
     var urlHadFocus by remember { mutableStateOf(false) }
@@ -1497,16 +1504,16 @@ private fun SettingsPage(
             item {
                 WhiteSection {
                     OutlinedTextField(
-                        value = platformUrlText,
-                        onValueChange = { platformUrlText = it },
+                        value = defaultPlatformUri,
+                        onValueChange = { defaultPlatformUri = it },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { state ->
-                                if (urlHadFocus && !state.isFocused) {
-                                    onCommitPlatformUrl(platformUrlText)
-                                }
-                                urlHadFocus = state.isFocused
-                            },
+                            .fillMaxWidth(),
+//                            .onFocusChanged { state ->
+//                                if (urlHadFocus && !state.isFocused) {
+//                                    onCommitPlatformUrl(platformUrlText)
+//                                }
+//                                urlHadFocus = state.isFocused
+//                            },
                         label = { Text("平台地址") },
                         placeholder = { Text("https://cloud.zectrix.com") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
@@ -1514,22 +1521,41 @@ private fun SettingsPage(
                         colors = whiteOutlinedFieldColors(),
                     )
                     OutlinedTextField(
-                        value = apiKeyText,
-                        onValueChange = { apiKeyText = it },
+                        value = defaultApiKey,
+                        onValueChange = { defaultApiKey = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 12.dp)
-                            .onFocusChanged { state ->
-                                if (apiKeyHadFocus && !state.isFocused) {
-                                    onCommitApiKey(apiKeyText)
-                                }
-                                apiKeyHadFocus = state.isFocused
-                            },
+                            .padding(top = 12.dp),
+//                            .onFocusChanged { state ->
+//                                if (apiKeyHadFocus && !state.isFocused) {
+//                                    onCommitApiKey(apiKeyText)
+//                                }
+//                                apiKeyHadFocus = state.isFocused
+//                            },
                         label = { Text("API 密钥") },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         colors = whiteOutlinedFieldColors(),
                     )
+                    Button(
+                        onClick = {
+                            focusManager.clearFocus(force = true)
+                            onCommitPlatformUrl(defaultPlatformUri)
+                            onCommitApiKey(defaultApiKey)
+                            onTestPlatformConnection(defaultPlatformUri, defaultApiKey)
+                            Toast.makeText(
+                                context,
+                                "已保存",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 18.dp),
+//                        enabled = !uiState.isTestingConnection,
+                    ) {
+                        Text("保存")
+                    }
                 }
             }
             item {
@@ -1612,9 +1638,9 @@ private fun SettingsPage(
                     Button(
                         onClick = {
                             focusManager.clearFocus(force = true)
-                            onCommitPlatformUrl(platformUrlText)
-                            onCommitApiKey(apiKeyText)
-                            onTestPlatformConnection(platformUrlText, apiKeyText)
+                            onCommitPlatformUrl(defaultPlatformUri)
+                            onCommitApiKey(defaultApiKey)
+                            onTestPlatformConnection(defaultPlatformUri, defaultApiKey)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1884,20 +1910,20 @@ private fun AboutPage() {
     ) {
         item {
             WhiteSection {
-                AboutRow("版本", "0.0.17")
-                AboutRow("作者", "PASSHEEP")
+                AboutRow("版本", "0.0.18")
+                AboutRow("作者", "Pancy")
             }
         }
         item {
             WhiteSection {
                 Text("相关链接", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 OutlinedButton(
-                    onClick = { uriHandler.openUri("https://cloud.zectrix.com") },
+                    onClick = { uriHandler.openUri("https://zectrix.com") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 14.dp),
                 ) {
-                    Text("极趣云平台")
+                    Text("Zectrix")
                 }
                 OutlinedButton(
                     onClick = { uriHandler.openUri("https://github.com/passheep/android_sticky_note") },
@@ -1905,15 +1931,7 @@ private fun AboutPage() {
                         .fillMaxWidth()
                         .padding(top = 10.dp),
                 ) {
-                    Text("项目 GitHub")
-                }
-                OutlinedButton(
-                    onClick = { uriHandler.openUri("https://wiki.zectrix.com") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                ) {
-                    Text("极趣科技-Wiki")
+                    Text("GitHub")
                 }
             }
         }

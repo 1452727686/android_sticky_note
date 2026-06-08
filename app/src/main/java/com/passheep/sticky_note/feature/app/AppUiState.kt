@@ -15,9 +15,9 @@ enum class AppRoute(
     val title: String,
 ) {
     TODOS("todos", "待办清单"),
+    DEVICE_SWITCH("device_switch", "切换设备"),
     SETTINGS("settings", "设置中心"),
     ABOUT("about", "关于软件"),
-    DEVICE_SWITCH("device_switch", "切换设备"),
 }
 
 enum class TodoFilter {
